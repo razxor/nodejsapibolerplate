@@ -66,7 +66,7 @@ const createToken = (payload) => {
         payload,
         process.env.JWT_SECRET,
         {
-            expiresIn: '5m'  // 1h
+            expiresIn: '24h'  // 1h
         }
     );
 }
