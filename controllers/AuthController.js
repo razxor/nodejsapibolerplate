@@ -1,5 +1,6 @@
 // DB Connection
 const connectDB = require('../database/db');
+const jwt = require('jsonwebtoken');
 
 const registerUser = async (req, res) => {
     const data = req.body;
@@ -13,7 +14,16 @@ const registerUser = async (req, res) => {
     const result = await collection.insertOne(data);
 
     if (result.acknowledged) {
+        const token = createToken(
+            {
+                userId : result.insertedId,
+                email : data.email,
+                role: data.role
+            },
+        );
         res.status(200).json({
+            success: true,
+            token: token,
             message: 'User Registered Successfully',
         })
     } else {
@@ -32,18 +42,34 @@ const loginUser = async (req, res) => {
     }
     const client = await connectDB();
     const collection = client.db('api_project').collection('users');
-    const users = await collection.findOne({ 'email': email, 'password': password });    
-    if(users) {
-        res.status(200).json({                  
+    const user = await collection.findOne({ 'email': email, 'password': password });
+    if (user) {
+         const token = createToken(
+            user
+        );
+
+        res.status(200).json({
+            success : true,
+            token : token,
             message: 'Login Successful',
-            user: users
+            user: user
         });
     } else {
         res.status(401).json({
             message: 'Invalid Credentials'
-        });                     
+        });
     }
 };
+
+const createToken = (payload) => {
+    return jwt.sign(
+        payload,
+        process.env.JWT_SECRET,
+        {
+            expiresIn: '5m'  // 1h
+        }
+    );
+}
 
 module.exports = { registerUser, loginUser };
 
