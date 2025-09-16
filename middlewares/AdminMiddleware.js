@@ -1,5 +1,5 @@
 const AdminMiddleware = (req, res, next) => {    
-    if (req.authUser.role !='admin') {
+    if (req.authUser.role != 'admin') {
         return res.status(401).json(
             {
                 success: false,
